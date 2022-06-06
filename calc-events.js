@@ -1,6 +1,6 @@
 let events = require('events');
 
-class Calculator extends events.EventEmitter {
+class EventCalculator extends events.EventEmitter {
     constructor() {
         super()
         setInterval(() => {
@@ -29,4 +29,4 @@ class Calculator extends events.EventEmitter {
         }
     }
 }
-module.exports = Calculator;
+module.exports = EventCalculator;

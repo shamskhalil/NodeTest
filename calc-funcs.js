@@ -1,4 +1,4 @@
-class Calculator {
+class FuncCalculator {
     constructor() { }
 
     add(a, b) {
@@ -10,7 +10,6 @@ class Calculator {
     }
 
     mul(a, b) {
-        for (let i = 0; i < 10000000000; i++) { }
         return a * b;
     }
 
@@ -19,4 +18,4 @@ class Calculator {
     }
 }
 
-module.exports = Calculator;
+module.exports = FuncCalculator;
