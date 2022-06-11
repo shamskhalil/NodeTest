@@ -5,6 +5,8 @@ class SockServer extends EventEmitter {
     constructor(host, port) {
         super();
         this.userSockets = [];
+        this.usernames = [];
+
         this.usersOnline = 0;
         this.host = host;
         this.port = port;
@@ -21,9 +23,21 @@ class SockServer extends EventEmitter {
             clientSocket
                 .on('data', function (data) {
                     data = data.toString();
-                    let id = this.clientChatId;
-                    let obj = { msg: data, clientId: id };
-                    thisClass.emit('clientdata', obj);
+                    //data = data.toUpperCase();
+                    //check if it is a command from the client
+                    if (data.startsWith('LOGIN')) {
+                        const username = data.split(' ')[1];
+                        console.log(`${username} logged in`);
+                        thisClass.usernames[this.clientIndex] = username;
+                        this.username = username;
+                    } else if (data.startsWith('GETUSERS')) {
+                        console.log(`fetching list users online ...: `, thisClass.usernames.join(','));
+                        this.write(Buffer.from(thisClass.usernames.join(',')));
+                    } else {
+                        let id = this.clientIndex;
+                        let obj = { msg: data, clientId: id };
+                        thisClass.emit('clientdata', obj);
+                    }
                 })
 
                 .on('error', err => {
@@ -31,14 +45,19 @@ class SockServer extends EventEmitter {
                 })
 
                 .on('end', function () {
-                    let ccid = this.clientChatId;
+                    let ccid = this.clientIndex;
                     delete thisClass.userSockets[ccid];
+                    delete thisClass.usernames[ccid];
                     thisClass.usersOnline--;
-                    console.log("client disconnects ", ccid);
+                    if (this.username) {
+                        console.log(`${this.username} disconnects from chat!`);
+                    } else {
+                        console.log('Client disconnets with index id: ', ccid)
+                    }
                     console.log(`We now have ${thisClass.usersOnline} user(s) online at the moment`)
                 });
 
-            clientSocket.clientChatId = this.usersOnline;
+            clientSocket.clientIndex = this.usersOnline;
             this.userSockets[this.usersOnline] = clientSocket;
             this.usersOnline++;
             console.log(`User with ip address ${clientSocket.remoteAddress} connected to us!`);
@@ -48,11 +67,11 @@ class SockServer extends EventEmitter {
         console.log(`Server running at tcp://${this.host}:${this.port}`);
     }
 
-    broadcast(msg, clientChatId) {
+    broadcast(msg, clientIndex) {
         msg = msg + "\n";
         msg = Buffer.from(msg);
         this.userSockets.forEach((cSocket) => {
-            if (cSocket.clientChatId !== clientChatId) {
+            if (cSocket.clientIndex !== clientIndex) {
                 cSocket.write(msg);
             }
         })

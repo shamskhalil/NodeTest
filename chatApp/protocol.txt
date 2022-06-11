@@ -1,0 +1,15 @@
+message to everyone
+msg|message
+
+msg|[shams]>> Hello everyone
+
+
+private message
+[recipient]msg
+
+[aminu][shams]>> Hello Aminu
+
+commands
+:login 
+:logout
+:getusers
