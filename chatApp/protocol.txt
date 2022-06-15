@@ -5,9 +5,9 @@ msg|[shams]>> Hello everyone
 
 
 private message
-[recipient]msg
+pmsg|recipient|sender|msg
 
-[aminu][shams]>> Hello Aminu
+pmsg|recipientName|fromName|Message to send to user
 
 commands
 :login 

@@ -3,7 +3,7 @@ const ClientSock = require('./client-sock');
 
 let myUsername = '';
 
-const serverSock = new ClientSock('localhost', 9000);
+const serverSock = new ClientSock('192.168.1.2', 9000);
 serverSock.on('serverdata', data => {
     processServerData(data);
 });
@@ -12,7 +12,6 @@ const inp = new Inputer();
 inp
     .on('username', name => {
         myUsername = name;
-        console.log(`My username is now ${myUsername}`);
     })
     .on('message', msg => {
         processInputData(msg);
@@ -30,7 +29,13 @@ function processInputData(data) {
     data = data.toUpperCase();
     //check for or [ or :
     if (data.startsWith('[')) {
-
+        //[shams]hello how are you doing
+        const arr = data.split('[');
+        const arr2 = arr[1].split(']');
+        const recipient = arr2[0];
+        const msg = arr2[1];
+        const payl = `PMSG|${recipient}|${myUsername}|${msg}`;
+        serverSock.sSock.write(Buffer.from(payl));
     } else if (data.startsWith(':')) {
         let command = data.split(':')[1];
         switch (command) {
@@ -50,7 +55,7 @@ function processInputData(data) {
         }
     } else {
         let payload = `msg|[${myUsername}] >> ${data}`;
-        console.log(payload);
+        serverSock.sSock.write(Buffer.from(payload));
     }
 }
 

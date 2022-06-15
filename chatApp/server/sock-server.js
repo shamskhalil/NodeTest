@@ -14,12 +14,8 @@ class SockServer extends EventEmitter {
     }
 
     init() {
-
-
-
         let server = net.createServer((clientSocket) => {
             let thisClass = this;
-
             clientSocket
                 .on('data', function (data) {
                     data = data.toString();
@@ -30,13 +26,25 @@ class SockServer extends EventEmitter {
                         console.log(`${username} logged in`);
                         thisClass.usernames[this.clientIndex] = username;
                         this.username = username;
+                        this.write(Buffer.from(`Welcome ${username}, we hope you will have a pleasant time here!!\n`));
+                        thisClass.broadcast(Buffer.from(`${username} just logged in!\n`), this.clientIndex);
+                    } else if (data.startsWith('LOGOUT')) {
+
                     } else if (data.startsWith('GETUSERS')) {
                         console.log(`fetching list users online ...: `, thisClass.usernames.join(','));
                         this.write(Buffer.from(thisClass.usernames.join(',')));
-                    } else {
+                    } else if (data.startsWith('MSG')) {
                         let id = this.clientIndex;
-                        let obj = { msg: data, clientId: id };
-                        thisClass.emit('clientdata', obj);
+                        let msg = data.split('|')[1];
+                        thisClass.broadcast(msg, id);
+                    } else if (data.startsWith('PMSG')) {
+                        //pmsg|recipient|sender|msg
+                        const arr = data.split('|');
+                        const recipient = arr[1];
+                        const sender = arr[2];
+                        const msg = arr[3]
+                        const payload = `[${sender}]>>[${recipient}]: ${msg}`;
+                        thisClass.privateChat(payload, recipient);
                     }
                 })
 
@@ -72,6 +80,15 @@ class SockServer extends EventEmitter {
         msg = Buffer.from(msg);
         this.userSockets.forEach((cSocket) => {
             if (cSocket.clientIndex !== clientIndex) {
+                cSocket.write(msg);
+            }
+        })
+    }
+    privateChat(msg, username) {
+        msg = msg + "\n";
+        msg = Buffer.from(msg);
+        this.userSockets.forEach((cSocket) => {
+            if (cSocket.username === username) {
                 cSocket.write(msg);
             }
         })
