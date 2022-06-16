@@ -2,7 +2,7 @@ const { Readable } = require('stream');
 
 class BoyStream extends Readable {
     constructor(arr) {
-        super({ encoding: 'utf-8' });
+        super({ objectMode: true });
         this.arr = arr;
         this.idx = 0;
     }
@@ -19,7 +19,13 @@ class BoyStream extends Readable {
     }
 }
 
-const boys = ['Aminu', 'Sani', 'James', 'John', 'Doe'];
+const boys = [
+    { name: 'Aminu', sex: 'Male' },
+    { name: 'Sani', sex: 'Male' },
+    { name: 'James', sex: 'Male' },
+    { name: 'John', sex: 'Male' },
+    { name: 'Doe', sex: 'Male' }
+];
 const str = new BoyStream(boys);
 str
     .on('data', chunk => console.log(chunk))
